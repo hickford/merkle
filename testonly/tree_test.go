@@ -23,6 +23,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/transparency-dev/merkle/proof"
 	"github.com/transparency-dev/merkle/rfc6962"
 )
 
@@ -156,6 +157,44 @@ func TestTreeConsistencyProofFuzz(t *testing.T) {
 			}
 		}
 	}
+}
+
+func FuzzConsistencyProof(f *testing.F) {
+	f.Fuzz(func(t *testing.T, size, size1, size2 uint64) {
+		t.Logf("size=%d, size1=%d, size2=%d", size, size1, size2)
+		if size1 > size2 || size2 > size {
+			return
+		}
+		tree := newTree(genEntries(size))
+		p, err := tree.ConsistencyProof(size1, size2)
+		t.Logf("proof=%v", p)
+		if err != nil {
+			t.Error(err)
+		}
+		err = proof.VerifyConsistency(tree.hasher, size1, size2, p, tree.HashAt(size1), tree.HashAt(size2))
+		if err != nil {
+			t.Error(err)
+		}
+	})
+}
+
+func FuzzInclusionProof(f *testing.F) {
+	f.Fuzz(func(t *testing.T, index, size uint64) {
+		t.Logf("index=%d, size=%d", index, size)
+		if index >= size {
+			return
+		}
+		tree := newTree(genEntries(size))
+		p, err := tree.InclusionProof(index, size)
+		t.Logf("proof=%v", p)
+		if err != nil {
+			t.Error(err)
+		}
+		err = proof.VerifyInclusion(tree.hasher, index, size, tree.LeafHash(index), p, tree.Hash())
+		if err != nil {
+			t.Error(err)
+		}
+	})
 }
 
 func TestTreeAppend(t *testing.T) {
