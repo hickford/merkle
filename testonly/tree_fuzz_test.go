@@ -12,7 +12,7 @@ import (
 )
 
 // Compute and verify consistency proofs
-func FuzzConsistencyProof(f *testing.F) {
+func FuzzConsistencyProofAndVerify(f *testing.F) {
 	for size := 0; size <= 8; size++ {
 		for end := 0; end <= size; end++ {
 			for begin := 0; begin <= end; begin++ {
@@ -39,7 +39,7 @@ func FuzzConsistencyProof(f *testing.F) {
 }
 
 // Compute and verify inclusion proofs
-func FuzzInclusionProof(f *testing.F) {
+func FuzzInclusionProofAndVerify(f *testing.F) {
 	for size := 0; size <= 8; size++ {
 		for index := 0; index <= size; index++ {
 			f.Add(uint64(index), uint64(size))
